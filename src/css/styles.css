@@ -20,8 +20,8 @@ body {
 }
 
 img{
-  width: 30px;
-  height: 30px;
+  width: 50px;
+  object-fit: fit;
   margin-right: 20px;
 }
 
