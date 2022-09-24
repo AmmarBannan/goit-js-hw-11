@@ -9,49 +9,57 @@ import "simplelightbox/dist/simple-lightbox.min.css";
 
 const Key="30147719-e1b2444a4263e41728889e473";
 const DEBOUNCE_DELAY = 300;
-let page =1;
+let rowsPerPage=20;
 
 const searchBox = document.querySelector("[name='searchQuery']");
 const search=document.querySelector("form");
-const listItem=document.querySelector(".list");
+const gallery=document.querySelector(".gallery");
 let timerId = null;
 
 search.addEventListener("submit", (e) => {
+    gallery.innerHTML="";
     e.preventDefault()
-    console.log(e.target.searchQuery.value)
-    fetchImages(e.target.searchQuery.value)
-        .then((items) => renderList(items))
-        .catch((error) => console.log(error));
+    let word=e.target.searchQuery.value.trimEnd().trimStart();
+    if(word!=""){fetching(word,1);}
+    else{Notify.warning("input field cant be empty")}
 });
 
-function fetchImages(type) {
-    return axios.get(`https://pixabay.com/api/?key=${Key}&_limit=20&q=${type}&page=${page}`)
-    .then((response) => {
-        if (response.ok)return response.json();
-        page+=1;
-        console.log(response.data.hits);
-        return response.data.hits;
-    });
+
+function fetching(e,page){
+    fetchImages(e,page)
+        .then((items) => renderList(items))
+        .catch((error) => console.log(error));
 }
 
-// function renderList(nameList){
-//     listItem.innerHTML=nameList.map((name)=>{
-//         console.log("here",name)
-//         return `<li class="item">
-//                 <img src=${name.previewURL} class="image"></img>
-//                 <div class="content">
-//                     <p>like</br>${name.likes}</p>
-//                     <p>comments</br>${name.comments}</p>
-//                     <p>views</br>${name.views}</p>
-//                     <p>downloads</br>${name.downloads}</p>
-//                 </div>
-//                 </li>`
-//     }).join("")
+
+
+function fetchImages(type,page) {
     
-// }
+    let params = {
+        page: page,
+        per_page: 20
+      }
+    return axios.get(`https://pixabay.com/api/?key=${Key}&q=${type}&_sort=previewWidth&_order=ASC`,{params:params})
+    .then((response)=>{
+        result=response.data.hits;
+        let total=response.data.total;
+        if(result.length===0){
+            Notify.failure("Sorry, there are no images matching your search query. Please try again.");
+            return
+        }
+        return {result:result,total:total};
+    })
+    .then(({result:result,total:total}) => {
+        // if (response.data.hits)return response.json();
+        page+=1;
+        Notify.success(`Hooray! We found ${result.length*page}/${total} images.`)
+        return result;
+    })
+    .catch((error) => console.log("cant found"))
+}
 
 function renderList(nameList){
-    listItem.innerHTML=nameList.map((name)=>{
+    gallery.innerHTML+=nameList.map((name)=>{
         return `<li class="gallery__item">
                     <a class="gallery__link" href="${name.largeImageURL}">
                         <img src=${name.previewURL} class="gallery__image" preview="${name.tags}"></img>
@@ -65,12 +73,32 @@ function renderList(nameList){
                 </li>`
     }).join("")
     
-    new SimpleLightbox(".listItem a", {
+    new SimpleLightbox(".gallery a", {
         captionsData: "alt",
         captionDelay: 250,
         captionPosition: "bottom",
     });
 }
+let page=1
+var lastScrollTop = 0;
+
+
+document.addEventListener(
+    "scroll",
+    debounce(
+      () => {
+
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {  
+            page+=1;
+            fetching(searchBox.value,page);
+        }   
+
+      },
+      300,
+      { trailing: true, leading: false }
+    )
+);
+
 
 
 

@@ -61,15 +61,13 @@ svg{
   height: 38px;
 }
 
-.list{
+.gallery{
   list-style: none;
-  width: 96%;
   border-radius: 5px;
   padding: 10px;
   column-gap: 10px;
   row-gap: 10px;
   display: flex;
-  flex-wrap: wrap;
 }
 
 .item{
@@ -78,7 +76,6 @@ svg{
   flex-direction: column;
   margin-bottom: 0px;
   padding-bottom: 0;
-  transition:box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 .image{
   height: 170px;
@@ -91,13 +88,8 @@ svg{
   display: flex;
   align-items: baseline;
   justify-content: space-evenly;
-  border: 1px solid #d8d5d5;
   background-color: white;
-  border-radius: 0 0 5px 5px;
-  border-top: none;
   height: 60px;
-  padding: 0 10px;
-  transition:background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 .content p{
   display: flex;
