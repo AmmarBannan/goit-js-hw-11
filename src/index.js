@@ -8,13 +8,10 @@ import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
 
 const Key="30147719-e1b2444a4263e41728889e473";
-const DEBOUNCE_DELAY = 300;
-let rowsPerPage=20;
 
 const searchBox = document.querySelector("[name='searchQuery']");
 const search=document.querySelector("form");
 const gallery=document.querySelector(".gallery");
-let timerId = null;
 
 search.addEventListener("submit", (e) => {
     gallery.innerHTML="";
@@ -30,8 +27,6 @@ function fetching(e,page){
         .then((items) => renderList(items))
         .catch((error) => console.log(error));
 }
-
-
 
 function fetchImages(type,page) {
     
@@ -98,7 +93,3 @@ document.addEventListener(
       { trailing: true, leading: false }
     )
 );
-
-
-
-
