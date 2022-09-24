@@ -18,7 +18,12 @@ searchBox.addEventListener("keyup",debounce(
         fetchContries(e.target.value)
         .then((contry)=>{
             if(contry.length>0){
-                contry.length<6?renderCountriesList(contry):Notify.info("Too many matches found,Please enter a more specific name.")
+                if(contry.length<6){renderCountriesList(contry)
+                }else{
+                    Notify.info("Too many matches found,Please enter a more specific name.");
+                    listItem.innerHTML="";
+                    clearInterval(timerId);
+                }
             }
         })
         .catch((error) => Notify.failure(error))
