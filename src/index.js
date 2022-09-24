@@ -2,103 +2,75 @@ import './css/styles.css';
 var debounce = require('lodash.debounce');
 // import { debounce } from "lodash"
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import axios from 'axios';
 
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
+
+const Key="30147719-e1b2444a4263e41728889e473";
 const DEBOUNCE_DELAY = 300;
+let page =1;
 
-const searchBox = document.querySelector("#search-box");
-const listItem=document.querySelector(".country-list");
-const description=document.querySelector(".country-info");
+const searchBox = document.querySelector("[name='searchQuery']");
+const search=document.querySelector("form");
+const listItem=document.querySelector(".list");
 let timerId = null;
 
-searchBox.addEventListener("keyup",debounce(
-    (e) => {
-        if(e.target.value.trim()===""){Notify.warning("cant be empty");return}
-        listItem.innerHTML="";
-        description.innerHTML="";
-        fetchContries(e.target.value)
-        .then((contry)=>{
-            if(contry.length>0){
-                if(contry.length<6){renderCountriesList(contry)
-                }else{
-                    Notify.info("Too many matches found,Please enter a more specific name.");
-                    listItem.innerHTML="";
-                    clearInterval(timerId);
-                }
-            }
-        })
-        .catch((error) => Notify.failure(error))
-    },300));
+search.addEventListener("submit", (e) => {
+    e.preventDefault()
+    console.log(e.target.searchQuery.value)
+    fetchImages(e.target.searchQuery.value)
+        .then((items) => renderList(items))
+        .catch((error) => console.log(error));
+});
 
-function fetchContries(name) {
-    const params = new URLSearchParams({
-        _limit: 2,
-        _page: 2
+function fetchImages(type) {
+    return axios.get(`https://pixabay.com/api/?key=${Key}&_limit=20&q=${type}&page=${page}`)
+    .then((response) => {
+        if (response.ok)return response.json();
+        page+=1;
+        console.log(response.data.hits);
+        return response.data.hits;
     });
-    listItem.innerHTML="loading.."
-    let counter=0
-    timerId=setInterval(()=>{
-        counter+=1
-        if(isOdd())
-        listItem.innerHTML=="loading.."?listItem.innerHTML="loading...":listItem.innerHTML=="loading.."
-    },300)
+}
+
+// function renderList(nameList){
+//     listItem.innerHTML=nameList.map((name)=>{
+//         console.log("here",name)
+//         return `<li class="item">
+//                 <img src=${name.previewURL} class="image"></img>
+//                 <div class="content">
+//                     <p>like</br>${name.likes}</p>
+//                     <p>comments</br>${name.comments}</p>
+//                     <p>views</br>${name.views}</p>
+//                     <p>downloads</br>${name.downloads}</p>
+//                 </div>
+//                 </li>`
+//     }).join("")
     
-    return fetch(`https://restcountries.com/v2/name/${name}`).then(
-        (response) => {
-            if (!response.ok) {
-            Notify.failure(
-                'Oops,there is no country with that name'
-            );
-            listItem.innerHTML="";
-        }
-        clearInterval(timerId);
-        return response.json();
-    }
-    );
+// }
+
+function renderList(nameList){
+    listItem.innerHTML=nameList.map((name)=>{
+        return `<li class="gallery__item">
+                    <a class="gallery__link" href="${name.largeImageURL}">
+                        <img src=${name.previewURL} class="gallery__image" preview="${name.tags}"></img>
+                        <div class="content">
+                            <p>like</br>${name.likes}</p>
+                            <p>comments</br>${name.comments}</p>
+                            <p>views</br>${name.views}</p>
+                            <p>downloads</br>${name.downloads}</p>
+                        </div>
+                    </a>
+                </li>`
+    }).join("")
+    
+    new SimpleLightbox(".listItem a", {
+        captionsData: "alt",
+        captionDelay: 250,
+        captionPosition: "bottom",
+    });
 }
 
-function renderCountriesList(contries) {
-        listItem.innerHTML = contries.map((contry)=>`
-        <li>
-            <div class="contry"> 
-                <img  src="${contry.flags.png}" alt="${contry.name}">
-                <h2 class="contry-name">${contry.name}</h2>
-            </div>
-        </li>`
-        ).join("");
-        
-        if(contries.length==1){
-            let contryLanguages="";
-            contries[0].languages.map((language)=>{
-                try {
-                    contryLanguages+=language.name+", ";
-                    console.log(language.name)
-                } catch (error) {
-                    error.massege;
-                }
-                
-            })
-            contryLanguages=contryLanguages.trimEnd().slice(0,-1)+".";
-            const markup = contries.map((contry) => {
-                // console.log(contry.languages[contry.languages.length-1])
-                return `
-                    <p><b>Name</b>: ${contry.capital}</p>
-                    <p><b>poulation</b>: ${contry.population}</p>
-                    <p><b>languages</b>: ${contryLanguages}</p>`;
-            })
-            .join("");
-            description.innerHTML = markup;
-        }
-    helper()
-    return contries;
-}
 
-function helper(){
-    // document.querySelector(".contry-name").addEventListener("click",(e)=>{
-    //     console.log(e.target.textContent);
-    //     searchBox.value=e.target.textContent;
-    // })
-    document.querySelectorAll("h2").forEach((h2)=>h2.addEventListener("click",(e)=>{
-        console.log(e.target.textContent);
-        searchBox.value=e.target.textContent;
-    }))
-}
+
