@@ -36,7 +36,8 @@ function fetchImages(type,page) {
       }
     return axios.get(`https://pixabay.com/api/?key=${Key}&q=${type}&_sort=previewWidth&_order=ASC`,{params:params})
     .then((response)=>{
-        result=response.data.hits;
+        let result=response.data.hits;
+        console.log(result);
         let total=response.data.total;
         if(result.length===0){
             Notify.failure("Sorry, there are no images matching your search query. Please try again.");
