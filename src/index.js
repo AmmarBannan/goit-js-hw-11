@@ -15,10 +15,13 @@ searchBox.addEventListener("keyup",debounce(
         listItem.innerHTML="";
         description.innerHTML="";
         fetchContries(e.target.value)
-        .then((contry) => contry.length<6?renderCountriesList(contry):Notify.info("Too many matches found,Please enter a more specific name."))
-        .catch((error) => console.log(error));
-    }
-,300));
+        .then((contry)=>{
+            if(contry.length>0){
+                contry.length<6?renderCountriesList(contry):Notify.info("Too many matches found,Please enter a more specific name.")
+            }
+        })
+        .catch((error) => Notify.failure(error))
+    },300));
 
 function fetchContries(name) {
     const params = new URLSearchParams({
@@ -35,7 +38,7 @@ function fetchContries(name) {
         (response) => {
             if (!response.ok) {
             Notify.failure(
-                'Oops,there is no country with that name.'
+                'Oops,there is no country with that name'
             );
             listItem.innerHTML="";
         }
@@ -91,3 +94,4 @@ function helper(){
         searchBox.value=e.target.textContent;
     }))
 }
+
