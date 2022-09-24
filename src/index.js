@@ -12,6 +12,7 @@ let timerId = null;
 
 searchBox.addEventListener("keyup",debounce(
     (e) => {
+        if(e.target.value.trim()===""){Notify.warning("cant be empty");return}
         listItem.innerHTML="";
         description.innerHTML="";
         fetchContries(e.target.value)
@@ -29,10 +30,12 @@ function fetchContries(name) {
         _page: 2
     });
     listItem.innerHTML="loading.."
+    let counter=0
     timerId=setInterval(()=>{
-        let contents=listItem.innerHTML;
-        contents=="loading.."?listItem.innerHTML="loading...":listItem.innerHTML=="loading.."
-    },500)
+        counter+=1
+        if(isOdd())
+        listItem.innerHTML=="loading.."?listItem.innerHTML="loading...":listItem.innerHTML=="loading.."
+    },300)
     
     return fetch(`https://restcountries.com/v2/name/${name}`).then(
         (response) => {
@@ -94,4 +97,3 @@ function helper(){
         searchBox.value=e.target.textContent;
     }))
 }
-
