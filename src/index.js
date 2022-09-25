@@ -47,7 +47,6 @@ function fetchImages(type,page) {
     })
     .then(({result:result,total:total}) => {
         // if (response.data.hits)return response.json();
-        page+=1;
         Notify.success(`Hooray! We found ${result.length*page}/${total} images.`)
         return result;
     })
