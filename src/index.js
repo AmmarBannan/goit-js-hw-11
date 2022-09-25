@@ -13,6 +13,14 @@ const searchBox = document.querySelector("[name='searchQuery']");
 const search=document.querySelector("form");
 const gallery=document.querySelector(".gallery");
 const loadingScreen=document.querySelector(".animate");
+let pageNumber=1;
+
+const pageNext=(reset)=>{
+    if(reset){
+        pageNumber=0;
+    }
+    return pageNumber+=1;
+}
 
 search.addEventListener("submit", (e) => {
     gallery.innerHTML="";
@@ -21,7 +29,7 @@ search.addEventListener("submit", (e) => {
     if(word!=""){
         loadingScreen.classList.toggle("hide");
         setTimeout(()=>{
-            fetching(word,1);
+            fetching(word,pageNext(true));
         },500)
     }
     else{Notify.warning("input field cant be empty")}
@@ -41,17 +49,19 @@ function fetchImages(type,page) {
     }
     return axios.get(`https://pixabay.com/api/?key=${Key}&q=${type}&_sort=previewWidth&_order=ASC`,{params:params})
     .then((response)=>{
+        console.log(page)
         loadingScreen.classList.toggle("hide")
         let result=response.data.hits;
         let total=response.data.total;
         if(result.length===0){
-            if(page>0){Notify.failure("Sorry,there are no more results");}
+            if(params.page>0){Notify.failure("Sorry,there are no more results");}
             else{Notify.failure("Sorry, there are no images matching your search query. Please try again.");}
             return
         }
-        return {result:result,total:total};
+        
+        return {result:result,total:total,page};
     })
-    .then(({result:result,total:total}) => {
+    .then(({result:result,total:total,page}) => {
         // if (response.data.hits)return response.json();
         Notify.success(`Hooray! We found ${result.length*page} out of ${total} images.`)
         return result;
@@ -80,9 +90,6 @@ function renderList(nameList){
         captionPosition: "bottom",
     });
 }
-let page=1
-var lastScrollTop = 0;
-
 
 
 
@@ -94,14 +101,11 @@ document.addEventListener(
         if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {  
             loadingScreen.classList.toggle("hide")
             setTimeout(() => {
-                page+=1;
-                fetching(searchBox.value,page)
+                fetching(searchBox.value,pageNext(false))
             }, 1000);
-            
-        }   
-
-      },
-      300,
-      { trailing: true, leading: false }
+            }   
+        },
+    300,
+    { trailing: true, leading: false }
     )
 );
