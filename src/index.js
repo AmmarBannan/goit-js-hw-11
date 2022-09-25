@@ -12,12 +12,18 @@ const Key="30147719-e1b2444a4263e41728889e473";
 const searchBox = document.querySelector("[name='searchQuery']");
 const search=document.querySelector("form");
 const gallery=document.querySelector(".gallery");
+const loadingScreen=document.querySelector(".animate");
 
 search.addEventListener("submit", (e) => {
     gallery.innerHTML="";
     e.preventDefault()
     let word=e.target.searchQuery.value.trimEnd().trimStart();
-    if(word!=""){fetching(word,1);}
+    if(word!=""){
+        loadingScreen.classList.toggle("hide");
+        setTimeout(()=>{
+            fetching(word,1);
+        },500)
+    }
     else{Notify.warning("input field cant be empty")}
 });
 
@@ -29,28 +35,28 @@ function fetching(e,page){
 }
 
 function fetchImages(type,page) {
-    
     let params = {
         page: page,
         per_page: 20
-      }
+    }
     return axios.get(`https://pixabay.com/api/?key=${Key}&q=${type}&_sort=previewWidth&_order=ASC`,{params:params})
     .then((response)=>{
+        loadingScreen.classList.toggle("hide")
         let result=response.data.hits;
-        console.log(result);
         let total=response.data.total;
         if(result.length===0){
-            Notify.failure("Sorry, there are no images matching your search query. Please try again.");
+            if(page>0){Notify.failure("Sorry,there are no more results");}
+            else{Notify.failure("Sorry, there are no images matching your search query. Please try again.");}
             return
         }
         return {result:result,total:total};
     })
     .then(({result:result,total:total}) => {
         // if (response.data.hits)return response.json();
-        Notify.success(`Hooray! We found ${result.length*page}/${total} images.`)
+        Notify.success(`Hooray! We found ${result.length*page} out of ${total} images.`)
         return result;
     })
-    .catch((error) => console.log("cant found"))
+    .catch((error) => {console.log(error);})
 }
 
 function renderList(nameList){
@@ -78,14 +84,20 @@ let page=1
 var lastScrollTop = 0;
 
 
+
+
 document.addEventListener(
     "scroll",
     debounce(
-      () => {
+        () => {
 
         if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {  
-            page+=1;
-            fetching(searchBox.value,page);
+            loadingScreen.classList.toggle("hide")
+            setTimeout(() => {
+                page+=1;
+                fetching(searchBox.value,page)
+            }, 1000);
+            
         }   
 
       },
